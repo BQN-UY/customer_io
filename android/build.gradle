@@ -1,0 +1,72 @@
+group 'io.customer.customer_io'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.7.21'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.3.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' } // Only required for using SNAPSHOT versions of the SDK
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace 'io.customer.customer_io'
+    compileSdkVersion 33
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+
+    // instruct kotlin compiler to opt in to the APIs annotated with the kotlin.RequiresOptIn
+    // and io.customer.base.internal.InternalCustomerIOApi annotations
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            freeCompilerArgs += ['-Xopt-in=kotlin.RequiresOptIn',
+                                 '-Xopt-in=io.customer.base.internal.InternalCustomerIOApi',]
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // Customer.io SDK
+    def cioVersion = "4.7.1"
+    implementation "io.customer.android:datapipelines:$cioVersion"
+    implementation "io.customer.android:messaging-push-fcm:$cioVersion"
+    implementation "io.customer.android:messaging-in-app:$cioVersion"
+    
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation 'org.mockito:mockito-core:4.11.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
+}
